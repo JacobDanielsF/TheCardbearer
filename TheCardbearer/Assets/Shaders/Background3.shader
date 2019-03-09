@@ -65,36 +65,35 @@
 				
 				
 				float2 c = i.uv;
-                c = c / 2;
 				
-				fixed4 output = fixed4(0.15, 0.25, 0.2, 0);	// dark background
+				fixed4 output = fixed4(0.1, 0.1, 0.2, 0);	// dark background
 				
 				
-				float2 ring = ( (2.*c) - float2(1, 1) );
+				float2 ring = ( (2*(c*c) + c) - float2(sin(_Time*0.7).y - 1, sin(_Time*0.05).y - 1) );
 				
 				float len = 10.*length(ring) + 5.*_Time;
 				
-				float func = (0.4 - (len % 2)/4) - ((i.uv.x + i.uv.y)/4);
+				float func = (0.8 - (len % 2)/4) - ((i.uv.x + i.uv.y)/4);
 				
-				if (func % 0.1 > 0 && func % 0.1 < (sin(_Time*0.75).y + 3)/60)
+				if (func % 0.2 > 0 && func % 0.2 < (sin(_Time*0.9).y + 3)/40)
 				{
-					output = output - fixed4(0.1, 0, 0.05, 0);		// green spiral
+					output = output + fixed4(0, 0.1, 0.1, 0);		// spiral
 				}
 				
 				
-				float eq1 = (i.uv.x + i.uv.y + sin(_Time*0.2).y + 10);
+				float eq1 = (i.uv.x + (sin(_Time*0.2).y + 10)*0.1);
 				float eq2 = (sin(_Time).y + 1.5)/20;
 				
-				float eq3 = (i.uv.x - i.uv.y + sin((_Time*0.2) + 3.14/2).y + 10);
+				float eq3 = (i.uv.x + (sin((_Time*0.2) + 3.14/2).y + 10)*0.3);
 				
-				if (eq1 % 0.4 < eq2 && eq1 % 0.4 > eq2 - 0.01)
+				if (eq1 % 0.2 < 1-eq2 && eq1 % 0.2 > eq2)
 				{
-					output = output + fixed4(0.1, 0.1, 0, 0);	// blue line
+					output = output - fixed4(0, 0.1, 0, 0);	// line
 				}
 				
-				if (eq3 % 0.3 < eq2 && eq3 % 0.3 > eq2 - 0.01)
+				if (eq3 % 0.2 < eq2 && eq3 % 0.2 > eq2 - 0.05)
 				{
-					output = output - fixed4(0.1, 0.05, 0, 0);	// orange line
+					output = output + fixed4(0, 0, 0.1, 0);	// line
 				}
 				
 				
