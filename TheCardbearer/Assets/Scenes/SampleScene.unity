@@ -3158,7 +3158,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.595}
   m_AnchorMax: {x: 0.47363624, y: 1}
-  m_AnchoredPosition: {x: -2.9000244, y: 4.2000275}
+  m_AnchoredPosition: {x: -2.9000244, y: 4.200035}
   m_SizeDelta: {x: -6.399994, y: -7.600006}
   m_Pivot: {x: 0.55, y: 0.5}
 --- !u!1 &1225048517
@@ -3559,6 +3559,10 @@ MonoBehaviour:
   BG1: {fileID: 2100000, guid: aa6add4c45c089d47a4953cb49741bfd, type: 2}
   BG2: {fileID: 2100000, guid: 73d65911b4ad60646bfca93598c25e04, type: 2}
   BG3: {fileID: 2100000, guid: 032223143f14c014ab7009e0662fd31f, type: 2}
+  lamp_opaque: {fileID: 2100000, guid: 8b5b9578f94e30d419f72f7149bdc9de, type: 2}
+  lamp_fade: {fileID: 2100000, guid: 1d7c531ca7415884badb0b89b2b40d32, type: 2}
+  ribbon_opaque: {fileID: 2100000, guid: 1a298425ddd769547ae62d64e96db4e3, type: 2}
+  ribbon_fade: {fileID: 2100000, guid: b5ebc493d55a2e94e9d2c692e0119f40, type: 2}
   lamp_prefab: {fileID: 6073044480199672856, guid: 9af3eea22cb2b3b44a9d2d77fdf6aaed,
     type: 3}
   ribbon_prefab: {fileID: 4436696285662878830, guid: 5892d28bf5879d2468d483e8402ef5f8,
@@ -3905,7 +3909,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.595}
   m_AnchorMax: {x: 0.47363624, y: 1}
-  m_AnchoredPosition: {x: -2.9000244, y: 4.2000275}
+  m_AnchoredPosition: {x: -2.9000244, y: 4.200035}
   m_SizeDelta: {x: -6.4000244, y: -7.600006}
   m_Pivot: {x: 0.55, y: 0.5}
 --- !u!1 &1497764583

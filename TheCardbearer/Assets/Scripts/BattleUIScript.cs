@@ -11,6 +11,11 @@ public class BattleUIScript : MonoBehaviour
 	public Material BG2;
 	public Material BG3;
 	
+	public Material lamp_opaque;
+	public Material lamp_fade;
+	public Material ribbon_opaque;
+	public Material ribbon_fade;
+	
 	public GameObject lamp_prefab;
 	public GameObject ribbon_prefab;
 	
@@ -576,6 +581,17 @@ public class BattleUIScript : MonoBehaviour
 		ZoomOut();
 		
 		GameObject enemybody = enemygroup.transform.Find("Enemy" + i.ToString()).Find("Body").gameObject;
+		
+		if (enemygroup.transform.Find("Enemy" + i.ToString()).Find("Lamp"))
+		{
+			enemybody.GetComponent<MeshRenderer>().material = lamp_fade;
+			
+		} else if (enemygroup.transform.Find("Enemy" + i.ToString()).Find("Ribbon"))
+		{
+			enemybody.GetComponent<MeshRenderer>().material = ribbon_fade;
+			
+		}
+		
 		Material m = enemybody.GetComponent<Renderer>().material;
 		Color c = m.color;
 		m.DOColor(new Color(c.r, c.b, c.g, 0), 1).SetEase(Ease.OutQuint);
