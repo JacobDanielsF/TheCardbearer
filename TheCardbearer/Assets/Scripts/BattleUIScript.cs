@@ -11,10 +11,9 @@ public class BattleUIScript : MonoBehaviour
 	public Material BG2;
 	public Material BG3;
 	
-	public Material lamp_opaque;
 	public Material lamp_fade;
-	public Material ribbon_opaque;
 	public Material ribbon_fade;
+	public Material cloak_fade;
 	
 	public GameObject lamp_prefab;
 	public GameObject ribbon_prefab;
@@ -24,6 +23,26 @@ public class BattleUIScript : MonoBehaviour
 	public GameObject background;
 	public GameObject player;
 	public GameObject playerbody;
+	public GameObject armpivotL;
+	public GameObject armpivotR;
+	public GameObject armL;
+	public GameObject armR;
+	public GameObject cardpack;
+	
+	public GameObject freedomP;
+	public GameObject chainsP;
+	public GameObject beliefP;
+	public GameObject denialP;
+	public GameObject mercyP;
+	public GameObject powerP;
+	public GameObject starP;
+	public GameObject shadowP;
+	
+	private AudioSource source;
+	public AudioClip hit;
+	public AudioClip shuffle;
+	public AudioClip snap;
+	public AudioClip thwip;
 	
 	public Button interpret;
 	public Text soultext;
@@ -48,6 +67,8 @@ public class BattleUIScript : MonoBehaviour
 	public Sprite sprite_denial;
 	public Sprite sprite_mercy;
 	public Sprite sprite_power;
+	public Sprite sprite_star;
+	public Sprite sprite_shadow;
 	
 	private int enemies;
 	private bool[] alive;
@@ -67,12 +88,18 @@ public class BattleUIScript : MonoBehaviour
 	
 	private int soul = 5;
 	
-	private string[] elements = {"FREEDOM", "CHAINS", "BELIEF", "DENIAL", "POWER", "MERCY"};
+	private string[] elements = {"FREEDOM", "CHAINS", "BELIEF", "DENIAL", "POWER", "MERCY", "STAR", "SHADOW"};
 	
 	
     // Start is called before the first frame update
     void Start()
     {
+		RaiseHand();
+		
+		source = camera.GetComponent<AudioSource>();
+		source.volume = 0;
+		source.DOFade(1, 0.8f);
+		
 		int enemynum = StaticVariables.SceneEnemies;
 		
 		for (int i = 0; i < enemynum; i++)
@@ -108,21 +135,26 @@ public class BattleUIScript : MonoBehaviour
 			}
 		}
 		
+		
 		elementdesc.Add("FREEDOM", "The essense of unconstrained movement and action. \n\nWhile freedom is often thought of as a good thing, its essense can be described as difficult to predict and often rebellious.");
 		elementdesc.Add("CHAINS", "The essense of constraints and moral weights. \n\nThis includes the many things which keep us anchored to reality, such as social bonds, logic, and fear of consequence.");
 		elementdesc.Add("BELIEF", "The essense of faith and possibility. \n\nBelief encompasses the things we may not understand or comprehend which we assign meaning to. \n\nThis includes subjects which currently only exist in our imagination.");
 		elementdesc.Add("DENIAL", "The essense of close-mindedness and despair. \n\nThis is a disturbingly powerful essense, capable of directing society towards lies and disaster. \n\nDenial is the true manifestation of our inner demons.");
 		elementdesc.Add("POWER", "The essense of strength and domination. \n\nHealth, skill and strength are closely connected, although unchecked power will often result in a corruption of the mind and damage to other individuals.");
 		elementdesc.Add("MERCY", "The essense of sacrifice and forgiveness. \n\nMercy is the rejection of power in order to avoid signifianct harm or destruction. \n\nThis is a rare essense to find in the world naturally.");
+		elementdesc.Add("STAR", "The essense of guidance and illumination. \n\nThe light of the stars brightens our world and has traditionally been useful for navigation. \n\nWhen in need of guidance, look to the heavens.");
+		elementdesc.Add("SHADOW", "The essence of obscurity and mystery. \n\nThis essence manifests itself in things we overlook, cannot see or do not understand. \n\nThe things which we lack understanding of are often the most important.");
 		
 		elementadj.Add("FREEDOM", new string[] {"quick", "energetic", "curious", "agile", "fleeting", "puzzling"});
-		elementadj.Add("CHAINS", new string[] {"restricted", "considerate", "cautious", "grounded", "wary", "insightful"});
+		elementadj.Add("CHAINS", new string[] {"restricted", "considerate", "cautious", "grounded", "wary", "steady"});
 		elementadj.Add("BELIEF", new string[] {"dogmatic", "creative", "inspired", "passionate", "pious", "spiritual"});
 		elementadj.Add("DENIAL", new string[] {"apathetic", "antagonistic", "egotistical", "heartless", "harmful", "poisoned"});
 		elementadj.Add("POWER", new string[] {"skilled", "elite", "mighty", "sturdy", "potent", "influential"});
 		elementadj.Add("MERCY", new string[] {"apologetic", "graceful", "modest", "peaceful", "forgiven", "moral"});
+		elementadj.Add("STAR", new string[] {"insightful", "bright", "resourceful", "shining", "visible", "radiant"});
+		elementadj.Add("SHADOW", new string[] {"hidden", "unseen", "unidentified", "dark", "concealed", "secretive"});
 		
-        interpret.onClick.AddListener(delegate{Focus();});
+        interpret.onClick.AddListener(Focus);
 		back.onClick.AddListener(GoBack);
 		
 		buttons = cardbuttons.GetComponentsInChildren<Button>();
@@ -135,7 +167,7 @@ public class BattleUIScript : MonoBehaviour
 		fade.gameObject.SetActive(true);
 		var c = fade.color;
 		fade.color = new Color(c.r, c.b, c.g, 1);
-		fade.DOColor(new Color(c.r, c.b, c.g, 0), 0.5f).OnComplete(RemoveFade);
+		fade.DOColor(new Color(c.r, c.b, c.g, 0), 0.8f).OnComplete(RemoveFade);
 		
 		soultext.text = "SOUL: " + soul.ToString();
 		
@@ -150,7 +182,7 @@ public class BattleUIScript : MonoBehaviour
 		
 		for (int i = 0; i < enemies; i++)
 		{
-			string thiselement = elements[Random.Range(0, 5)];
+			string thiselement = elements[Random.Range(0, 7)];
 			enemyelements[i] = thiselement;
 			alive[i] = true;
 			
@@ -262,7 +294,7 @@ public class BattleUIScript : MonoBehaviour
 	
 	
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
 		Vector2 worldpos = camera.GetComponent<Camera>().WorldToScreenPoint(enemygroup.transform.position + new Vector3(0, -0.3f, 0));
 		interpret.GetComponent<RectTransform>().anchoredPosition = new Vector2(worldpos.x, worldpos.y);
@@ -281,6 +313,16 @@ public class BattleUIScript : MonoBehaviour
 			minicard3.GetComponent<RectTransform>().anchoredPosition = new Vector2(worldpos.x, worldpos.y);
 			
 		}
+		
+		for (int i = 1; i <= enemies; i++)
+		{
+			if (alive[i-1] == true)
+			{
+				GameObject enemybody = enemygroup.transform.Find("Enemy" + i.ToString()).Find("Body").gameObject;
+				
+				enemybody.transform.Translate(new Vector3(0, Mathf.Cos((Time.frameCount * 0.05f) + ((enemybody.transform.position.x+8)*3)) * 0.005f, 0), Space.World);
+			}
+		}
     }
 	
 	
@@ -292,10 +334,14 @@ public class BattleUIScript : MonoBehaviour
 	
 	void EndGame()
 	{
+		LowerHands();
+		
+		source.DOFade(0, 0.8f);
+		
 		fade.gameObject.SetActive(true);
 		
 		var c = fade.color;
-		fade.DOColor(new Color(c.r, c.b, c.g, 1), 0.5f).OnComplete(NextScene);
+		fade.DOColor(new Color(c.r, c.b, c.g, 1), 0.8f).OnComplete(NextScene);
 	}
 	
 	void NextScene()
@@ -306,6 +352,8 @@ public class BattleUIScript : MonoBehaviour
 	
 	public void OnMouseOver(GameObject button)
     {
+		source.PlayOneShot(hit, 1);
+		
 		string name = button.name;
 		Color newcolor = button.GetComponent<Image>().color;
 		
@@ -334,6 +382,12 @@ public class BattleUIScript : MonoBehaviour
 		} else if (button.name == "POWER"){
 			carddesc.GetComponent<Image>().sprite = sprite_power;
 			
+		} else if (button.name == "STAR"){
+			carddesc.GetComponent<Image>().sprite = sprite_star;
+			
+		} else if (button.name == "SHADOW"){
+			carddesc.GetComponent<Image>().sprite = sprite_shadow;
+			
 		}
 		
 		carddesc.SetActive(true);
@@ -342,7 +396,14 @@ public class BattleUIScript : MonoBehaviour
 	
 	void Click(GameObject button)
 	{
+		source.PlayOneShot(snap, 1);
+		
+		
 		if (alivetotal == 1){
+			HideZoomedUI();
+			ZoomOut();
+			Strike();
+			
 			int aliveindex = 0;
 			
 			while(alive[aliveindex] == false && aliveindex < enemies)
@@ -355,14 +416,16 @@ public class BattleUIScript : MonoBehaviour
 			int missed = -1;
 			int damage = 0;
 			
-			if (currentcard == enemyelements[aliveindex]){
+			if (currentcard == enemyelements[aliveindex])
+			{
 				alive[aliveindex] = false;
 				alivetotal--;
 				KO++;
 				
 				KOText(1, alivetotal);
-				CriticalHit(aliveindex+1, true);
-			} else
+				CriticalHit(aliveindex+1, true, currentcard);
+			}
+			else
 			{
 				missed++;
 				Miss(aliveindex+1);
@@ -386,6 +449,10 @@ public class BattleUIScript : MonoBehaviour
 			
 			if (missed != -1)
 			{
+				soul -= damage;
+				
+				soul = Mathf.Clamp(soul, 0, 10);
+				
 				soultext.text = "SOUL: " + soul.ToString();
 				soultext.gameObject.SetActive(true);
 				soultext.GetComponent<RectTransform>().DOShakeAnchorPos(0.5f, new Vector2(40, 5), 15, 30, false, true);
@@ -394,8 +461,17 @@ public class BattleUIScript : MonoBehaviour
 				subtract.color = new Color(1, 0, 0, 1);
 				
 				StartCoroutine(FadeColor());
+				
+				if (soul <= 0)
+				{
+					StartCoroutine(Lose());
+				}
+				else
+				{
+					StartCoroutine(PauseReturn());
+				}
+				
 			}
-			
 			
 		} else if (alivetotal > 1) {
 			
@@ -426,6 +502,12 @@ public class BattleUIScript : MonoBehaviour
 				
 			} else if (button.name == "POWER"){
 				newsprite = sprite_power;
+				
+			} else if (button.name == "STAR"){
+				newsprite = sprite_star;
+				
+			} else if (button.name == "STAR"){
+				newsprite = sprite_star;
 				
 			}
 			
@@ -463,6 +545,10 @@ public class BattleUIScript : MonoBehaviour
 				int missed = -1;
 				int damage = 0;
 				
+				HideZoomedUI();
+				ZoomOut();
+				Strike();
+				
 				for (int i = 0; i < enemies; i++)
 				{
 					if (alive[i] == true)
@@ -477,7 +563,7 @@ public class BattleUIScript : MonoBehaviour
 							bool last = false;
 							if (i == enemies-1) last = true;
 							
-							CriticalHit(i+1, last);
+							CriticalHit(i+1, last, cardstack[stackindex]);
 							KO++;
 							
 						} else {
@@ -505,6 +591,10 @@ public class BattleUIScript : MonoBehaviour
 				
 				if (missed != -1)
 				{
+					soul -= damage;
+					
+					soul = Mathf.Clamp(soul, 0, 10);
+					
 					soultext.text = "SOUL: " + soul.ToString();
 					soultext.gameObject.SetActive(true);
 					soultext.GetComponent<RectTransform>().DOShakeAnchorPos(0.5f, new Vector2(40, 5), 15, 30, false, true);
@@ -518,6 +608,13 @@ public class BattleUIScript : MonoBehaviour
 					{
 						StartCoroutine(MoveToCenter(missed+1));
 					}
+					
+					if (soul <= 0)
+					{
+						StartCoroutine(Lose());
+					} else {
+						StartCoroutine(PauseReturn());
+					}
 				}
 			}
 			
@@ -527,7 +624,7 @@ public class BattleUIScript : MonoBehaviour
 	
 	IEnumerator FadeColor()
 	{
-		playerbody.transform.DOShakePosition(0.5f, new Vector3(-0.5f, 0, 0), 15, 30, false, true);
+		player.transform.DOShakePosition(0.5f, new Vector3(-0.5f, 0, 0), 15, 30, false, true);
 		
 		yield return new WaitForSeconds(1);
 		subtract.DOColor(new Color(1, 0, 0, 0), 1.5f).SetEase(Ease.OutQuint);
@@ -573,12 +670,9 @@ public class BattleUIScript : MonoBehaviour
 		multitext.gameObject.SetActive(false);
 	}
 	
-	void CriticalHit(int i, bool last)
+	void CriticalHit(int i, bool last, string cardtype)
 	{
 		Debug.Log("Critical Hit");
-		
-		HideZoomedUI();
-		ZoomOut();
 		
 		GameObject enemybody = enemygroup.transform.Find("Enemy" + i.ToString()).Find("Body").gameObject;
 		
@@ -604,29 +698,76 @@ public class BattleUIScript : MonoBehaviour
 		} else if (last == true) {
 			StartCoroutine(PauseReturn());
 		}
+		
+		
+		GameObject temp;
+		if (cardtype == "FREEDOM")
+		{
+			temp = Instantiate(freedomP, enemybody.transform.position, enemybody.transform.rotation);
+		}
+		else if (cardtype == "CHAINS")
+		{
+			temp = Instantiate(chainsP, enemybody.transform.position, enemybody.transform.rotation);
+		}
+		else if (cardtype == "BELIEF")
+		{
+			temp = Instantiate(beliefP, enemybody.transform.position, enemybody.transform.rotation);
+		}
+		else if (cardtype == "DENIAL")
+		{
+			temp = Instantiate(denialP, enemybody.transform.position, enemybody.transform.rotation);
+		}
+		else if (cardtype == "MERCY")
+		{
+			temp = Instantiate(mercyP, enemybody.transform.position, enemybody.transform.rotation);
+		}
+		else if (cardtype == "POWER")
+		{
+			temp = Instantiate(powerP, enemybody.transform.position, enemybody.transform.rotation);
+		}
+		else if (cardtype == "STAR")
+		{
+			temp = Instantiate(starP, enemybody.transform.position, enemybody.transform.rotation);
+		}
+		else if (cardtype == "SHADOW")
+		{
+			temp = Instantiate(shadowP, enemybody.transform.position, enemybody.transform.rotation);
+		}
 	}
 	
 	void Miss(int i)
 	{
 		Debug.Log("Miss");
-		
-		HideZoomedUI();
-		ZoomOut();
-		
-		soul--;
-		
-		if (soul == 0)
-		{
-			StartCoroutine(Lose());
-		} else {
-			StartCoroutine(PauseReturn());
-		}
 	}
 	
 	
 	IEnumerator Lose()
     {
-        yield return new WaitForSeconds(1);
+		LowerHands();
+		
+		yield return new WaitForSeconds(0.5f);
+		
+		
+		cardpack.SetActive(false);
+		
+		playerbody.GetComponent<MeshRenderer>().material = cloak_fade;
+		armL.GetComponent<MeshRenderer>().material = cloak_fade;
+		armR.GetComponent<MeshRenderer>().material = cloak_fade;
+		
+		Material m1 = playerbody.GetComponent<Renderer>().material;
+		Color c1 = m1.color;
+		m1.DOColor(new Color(c1.r, c1.b, c1.g, 0), 1).SetEase(Ease.OutQuint);
+		
+		Material m2 = armL.GetComponent<Renderer>().material;
+		Color c2 = m2.color;
+		m2.DOColor(new Color(c2.r, c2.b, c2.g, 0), 1).SetEase(Ease.OutQuint);
+		
+		Material m3 = armR.GetComponent<Renderer>().material;
+		Color c3 = m3.color;
+		m3.DOColor(new Color(c3.r, c3.b, c3.g, 0), 1).SetEase(Ease.OutQuint);
+		
+		
+		yield return new WaitForSeconds(0.5f);
 		
 		attacktext.transform.Find("Text").gameObject.GetComponent<Text>().text = "Your soul has been depleted.";
 		
@@ -637,6 +778,8 @@ public class BattleUIScript : MonoBehaviour
 	IEnumerator PauseEnd()
 	{
 		yield return new WaitForSeconds(1);
+		
+		LowerHands();
 		attacktext.transform.Find("Text").gameObject.GetComponent<Text>().text = "The area is clear.";
 		
 		yield return new WaitForSeconds(1);
@@ -653,6 +796,8 @@ public class BattleUIScript : MonoBehaviour
 		
 		soultext.gameObject.SetActive(true);
 		interpret.gameObject.SetActive(true);
+		
+		RaiseHand();
     }
 	
 	
@@ -672,6 +817,8 @@ public class BattleUIScript : MonoBehaviour
 	
 	void Focus()
 	{
+		source.PlayOneShot(thwip, 1);
+		
 		ZoomIn();
 		
 		soultext.gameObject.SetActive(false);
@@ -793,6 +940,8 @@ public class BattleUIScript : MonoBehaviour
 	
 	void GoBack()
 	{
+		source.PlayOneShot(shuffle, 1);
+		
 		ZoomOut();
 		
 		soultext.text = "SOUL: " + soul.ToString();
@@ -812,6 +961,43 @@ public class BattleUIScript : MonoBehaviour
 		minicard3.SetActive(false);
 		
 		currentcard = "";
+	}
+	
+	
+	void RaiseHand()
+	{
+		float tweentime = 0.5f;
+		
+		player.transform.DORotate(new Vector3(0, 10, 0), tweentime);
+		
+		armpivotR.transform.DOLocalRotate(new Vector3(0, 0, 10), tweentime);
+		
+		armpivotL.transform.DOLocalRotate(new Vector3(0, 0, -45), tweentime);
+		
+		cardpack.transform.DOScale(new Vector3(0.03f, 0.03f, 0.03f), tweentime);
+	}
+	
+	void Strike()
+	{
+		float tweentime = 0.5f;
+		
+		cardpack.transform.localScale = new Vector3(0,0,0);
+		
+		armpivotR.transform.eulerAngles = new Vector3(0, 0, -60);
+		
+		armpivotL.transform.eulerAngles = new Vector3(0, 0, 10);
+		
+		player.transform.DORotate(new Vector3(0, 30, 0), tweentime).SetEase(Ease.OutQuint);
+		
+	}
+	
+	void LowerHands()
+	{
+		float tweentime = 0.5f;
+		
+		armpivotR.transform.DOLocalRotate(new Vector3(0, 0, 0), tweentime);
+		
+		armpivotL.transform.DOLocalRotate(new Vector3(0, 0, 0), tweentime);
 	}
 	
 }
