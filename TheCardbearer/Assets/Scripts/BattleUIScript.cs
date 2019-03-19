@@ -13,10 +13,12 @@ public class BattleUIScript : MonoBehaviour
 	
 	public Material lamp_fade;
 	public Material ribbon_fade;
+	public Material sigil_fade;
 	public Material cloak_fade;
 	
 	public GameObject lamp_prefab;
 	public GameObject ribbon_prefab;
+	public GameObject sigil_prefab;
 	
 	public GameObject camera;
 	public GameObject enemygroup;
@@ -86,7 +88,7 @@ public class BattleUIScript : MonoBehaviour
 	
 	private string currentcard = "";
 	
-	private int soul = 5;
+	private int soul = 8;
 	
 	private string[] elements = {"FREEDOM", "CHAINS", "BELIEF", "DENIAL", "POWER", "MERCY", "STAR", "SHADOW"};
 	
@@ -104,9 +106,9 @@ public class BattleUIScript : MonoBehaviour
 		
 		for (int i = 0; i < enemynum; i++)
 		{
-			float temp = Random.Range(0f, 1f);
+			float temp = Random.Range(0f, 5f);
 			
-			if (temp < 0.5f)
+			if (temp < 2f)
 			{
 				GameObject newmodel = Instantiate(lamp_prefab, enemygroup.transform);
 				newmodel.name = "Enemy" + (i+1).ToString();
@@ -119,9 +121,24 @@ public class BattleUIScript : MonoBehaviour
 				
 				newmodel.transform.localPosition = new Vector3((i*1.5f) - ((enemynum-1)*0.75f), 0, offset);
 				
-			} else if (temp >= 0.5f)
+			}
+			else if (temp >= 2f && temp < 4f)
 			{
 				GameObject newmodel = Instantiate(ribbon_prefab, enemygroup.transform);
+				newmodel.name = "Enemy" + (i+1).ToString();
+				
+				float offset = 0;
+				if (i == 1)
+				{
+					offset = 3;
+				}
+				
+				newmodel.transform.localPosition = new Vector3((i*1.5f) - ((enemynum-1)*0.75f), 0, offset);
+				
+			}
+			else if (temp >= 4f && temp <= 5f)
+			{
+				GameObject newmodel = Instantiate(sigil_prefab, enemygroup.transform);
 				newmodel.name = "Enemy" + (i+1).ToString();
 				
 				float offset = 0;
@@ -179,18 +196,47 @@ public class BattleUIScript : MonoBehaviour
 		cardstack = new string[enemies];
 		
 		int lasttemp = 0;
+		string lastelement1 = "-1";
+		string lastelement2 = "-1";
 		
 		for (int i = 0; i < enemies; i++)
 		{
-			string thiselement = elements[Random.Range(0, 7)];
+			string thiselement;
+			int thiselementnum;
+			
+			if (lastelement1 == "-1")
+			{
+				thiselement = elements[(int)Mathf.Floor(Random.Range(0f, 7.99f))];
+				lastelement1 = thiselement;
+			}
+			else if (lastelement2 == "-1")
+			{
+				thiselement = lastelement1;
+				while (thiselement == lastelement1)
+				{
+					thiselement = elements[(int)Mathf.Floor(Random.Range(0f, 7.99f))];
+				}
+				
+				lastelement2 = thiselement;
+			}
+			else
+			{
+				thiselement = lastelement1;
+				while (thiselement == lastelement1 || thiselement == lastelement2)
+				{
+					thiselement = elements[(int)Mathf.Floor(Random.Range(0f, 7.99f))];
+				}
+			}
+			
+			
 			enemyelements[i] = thiselement;
 			alive[i] = true;
 			
 			Debug.Log(enemyelements[i]);
 			
 			// get 2 random numbers between 0 and 5
-			int a = Random.Range(0, 5);
-			int b = a + Random.Range(1, 5);
+			int a = (int)Mathf.Floor(Random.Range(0f, 5.99f));
+			int b = a + (int)Mathf.Floor(Random.Range(1f, 5.99f));
 			if (b > 5) b -= 6;
 			
 			Debug.Log(elementadj[enemyelements[i]][a] + ", " + elementadj[enemyelements[i]][b]);
@@ -199,11 +245,12 @@ public class BattleUIScript : MonoBehaviour
 			int temp;
 			if (lasttemp == 0)
 			{
-				temp = Random.Range(1, 4);
+				temp = (int)Mathf.Floor(Random.Range(1f, 4.99f));
 				
-			} else 
+			}
+			else
 			{
-				temp = lasttemp + Random.Range(1, 3);
+				temp = lasttemp + (int)Mathf.Floor(Random.Range(1f, 3.99f));
 				if (temp > 4) temp -= 4;
 				
 			}
@@ -215,15 +262,18 @@ public class BattleUIScript : MonoBehaviour
 			{
 				middletext = "Seems to be ";
 				
-			} else if (temp == 2)
+			}
+			else if (temp == 2)
 			{
 				middletext = "Its essence suggests it is ";
 				
-			} else if (temp == 3)
+			}
+			else if (temp == 3)
 			{
 				middletext = "May perhaps be ";
 			
-			} else if (temp == 4)
+			}
+			else if (temp == 4)
 			{
 				middletext = "Possibly ";
 				
@@ -238,8 +288,7 @@ public class BattleUIScript : MonoBehaviour
 				string[] text = new string[] {enemytext, middletext, elementadj[enemyelements[i]][a], " and ", elementadj[enemyelements[i]][b], "."};
 				enemydesc.Add(i, text);
 			}
-			
-			if (enemygroup.transform.Find("Enemy" + (i+1).ToString()).Find("Ribbon"))
+			else if (enemygroup.transform.Find("Enemy" + (i+1).ToString()).Find("Ribbon"))
 			{
 				Debug.Log("Found ribbon");
 				
@@ -247,7 +296,17 @@ public class BattleUIScript : MonoBehaviour
 				string[] text = new string[] {enemytext, middletext, elementadj[enemyelements[i]][a], " and ", elementadj[enemyelements[i]][b], "."};
 				enemydesc.Add(i, text);
 			}
+			else if (enemygroup.transform.Find("Enemy" + (i+1).ToString()).Find("Sigil"))
+			{
+				Debug.Log("Found sigil");
+				
+				string enemytext = "A dangerous sigil of arcane origins. \n";
+				string[] text = new string[] {enemytext, middletext, elementadj[enemyelements[i]][a], " and ", elementadj[enemyelements[i]][b], "."};
+				enemydesc.Add(i, text);
+			}
 		}
+		
+		Debug.Log("Enemies ready");
 		
 		
 		float BGtemp = Random.Range(0, 3);
@@ -434,9 +493,15 @@ public class BattleUIScript : MonoBehaviour
 				{
 					damage += 1;
 					
-				} else if (enemygroup.transform.Find("Enemy" + (aliveindex+1).ToString()).Find("Ribbon"))
+				}
+				else if (enemygroup.transform.Find("Enemy" + (aliveindex+1).ToString()).Find("Ribbon"))
 				{
 					damage += 2;
+					
+				}
+				else if (enemygroup.transform.Find("Enemy" + (aliveindex+1).ToString()).Find("Sigil"))
+				{
+					damage += 3;
 					
 				}
 			}
@@ -506,8 +571,8 @@ public class BattleUIScript : MonoBehaviour
 			} else if (button.name == "STAR"){
 				newsprite = sprite_star;
 				
-			} else if (button.name == "STAR"){
-				newsprite = sprite_star;
+			} else if (button.name == "SHADOW"){
+				newsprite = sprite_shadow;
 				
 			}
 			
@@ -577,6 +642,11 @@ public class BattleUIScript : MonoBehaviour
 							} else if (enemygroup.transform.Find("Enemy" + (i+1).ToString()).Find("Ribbon"))
 							{
 								damage += 2;
+								
+							}
+							else if (enemygroup.transform.Find("Enemy" + (aliveindex+1).ToString()).Find("Sigil"))
+							{
+								damage += 3;
 								
 							}
 						}
@@ -680,9 +750,15 @@ public class BattleUIScript : MonoBehaviour
 		{
 			enemybody.GetComponent<MeshRenderer>().material = lamp_fade;
 			
-		} else if (enemygroup.transform.Find("Enemy" + i.ToString()).Find("Ribbon"))
+		}
+		else if (enemygroup.transform.Find("Enemy" + i.ToString()).Find("Ribbon"))
 		{
 			enemybody.GetComponent<MeshRenderer>().material = ribbon_fade;
+			
+		}
+		else if (enemygroup.transform.Find("Enemy" + i.ToString()).Find("Sigil"))
+		{
+			enemybody.GetComponent<MeshRenderer>().material = sigil_fade;
 			
 		}
 		
