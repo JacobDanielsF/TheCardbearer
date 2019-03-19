@@ -749,6 +749,7 @@ public class BattleUIScript : MonoBehaviour
 		if (enemygroup.transform.Find("Enemy" + i.ToString()).Find("Lamp"))
 		{
 			enemybody.GetComponent<MeshRenderer>().material = lamp_fade;
+			enemybody.transform.Find("Light").GetComponent<Light>().DOIntensity(0, 1);
 			
 		}
 		else if (enemygroup.transform.Find("Enemy" + i.ToString()).Find("Ribbon"))
