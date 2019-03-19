@@ -644,7 +644,7 @@ public class BattleUIScript : MonoBehaviour
 								damage += 2;
 								
 							}
-							else if (enemygroup.transform.Find("Enemy" + (aliveindex+1).ToString()).Find("Sigil"))
+							else if (enemygroup.transform.Find("Enemy" + (i+1).ToString()).Find("Sigil"))
 							{
 								damage += 3;
 								
